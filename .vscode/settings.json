@@ -1,0 +1,11 @@
+{
+    "go.goroot": "C:\\Go",
+    "go.gopath": "E:\\workspace\\go",
+    "go.inferGopath": false,
+    "go.autocompleteUnimportedPackages": true,
+    "go.useCodeSnippetsOnFunctionSuggest": true,
+    "editor.wordWrap": "on",
+    "go.gocodeAutoBuild": true,
+    "editor.formatOnSave": true,
+    "view-in-browser.customBrowser": "chrome"
+}
