@@ -10,7 +10,6 @@ import (
 	"math/big"
 	"os"
 	"path"
-	_ "pzct/config"
 	"runtime"
 	"strconv"
 	"sync"
