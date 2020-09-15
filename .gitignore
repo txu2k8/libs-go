@@ -13,3 +13,8 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# ignore test files
+__debug_bin
+log/*
+tmp/*

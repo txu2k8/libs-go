@@ -1,6 +1,6 @@
 {
     "go.goroot": "C:\\Go",
-    "go.gopath": "E:\\workspace\\go",
+    "go.gopath": "C:\\workspace\\go",
     "go.inferGopath": false,
     "go.autocompleteUnimportedPackages": true,
     "go.useCodeSnippetsOnFunctionSuggest": true,
