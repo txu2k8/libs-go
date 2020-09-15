@@ -1,0 +1,425 @@
+<!-- This template prepare for a report with 4+ tables -->
+<!-- <?xml version="1.0" encoding="UTF-8"?> -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>{{.Title}}</title>
+    <meta name="generator" content="%(generator)s" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style type="text/css" media="screen">
+        body {
+            font-family: verdana, arial, helvetica, sans-serif;
+            font-size: 80%;
+        }
+
+        table {
+            font-size: 100%;
+        }
+
+        /* -- heading ---------------------------------------------------------------------- */
+        h1 {
+            font-size: 16pt;
+            color: gray;
+        }
+
+        .heading {
+            margin-top: 0ex;
+            margin-bottom: 1ex;
+        }
+
+        .heading .attribute {
+            margin-top: 1ex;
+            margin-bottom: 0;
+        }
+
+        .heading .description {
+            margin-top: 4ex;
+            margin-bottom: 6ex;
+        }
+
+        /* -- css div popup ------------------------------------------------------------------------ */
+        a.popup_link:hover {
+            color: red;
+        }
+
+        .popup_window {
+            display: none;
+            position: relative;
+            left: 0px;
+            top: 0px;
+            /*border: solid #627173 1px; */
+            padding: 10px;
+            background-color: #E6E6D6;
+            font-family: "Lucida Console", "Courier New", Courier, monospace;
+            text-align: left;
+            font-size: 8pt;
+            width: 500px;
+        }
+
+        /* -- report ------------------------------------------------------------------------ */
+        #show_detail_line {
+            margin-top: 3ex;
+            margin-bottom: 1ex;
+        }
+
+        #env_table {
+            width: 80%;
+            border-collapse: collapse;
+            border: 1px solid #777;
+        }
+
+        #node_table {
+            width: 80%;
+            border-collapse: collapse;
+            border: 1px solid #777;
+        }
+
+        #summary_table {
+            width: 80%;
+            border-collapse: collapse;
+            border: 1px solid #777;
+        }
+
+        #result_table {
+            width: 80%;
+            border-collapse: collapse;
+            border: 1px solid #777;
+        }
+
+        #header_row {
+            font-weight: bold;
+            color: white;
+            background-color: #777;
+        }
+
+        #env_table td {
+            border: 1px solid #777;
+            padding: 2px;
+        }
+
+        #node_table td {
+            border: 1px solid #777;
+            padding: 2px;
+        }
+
+        #summary_table td {
+            border: 1px solid #777;
+            padding: 2px;
+        }
+
+        #result_table td {
+            border: 1px solid #777;
+            padding: 2px;
+        }
+
+        #summary_row {
+            font-weight: bold;
+        }
+
+        #total_row {
+            font-weight: bold;
+        }
+
+        .passClass {
+            background-color: #6c6;
+        }
+
+        .failClass {
+            background-color: #c60;
+        }
+
+        .errorClass {
+            background-color: #c00;
+        }
+
+        .passCase {
+            color: #6c6;
+        }
+
+        .failCase {
+            color: #c60;
+            font-weight: bold;
+        }
+
+        .errorCase {
+            color: #c00;
+            font-weight: bold;
+        }
+
+        .hiddenRow {
+            display: none;
+        }
+
+        .testcase {
+            margin-left: 2em;
+        }
+
+        /* -- ending ---------------------------------------------------------------------- */
+    </style>
+</head>
+
+<body>
+    <script language="javascript" type="text/javascript">
+        /*level
+        0:Summary //all hiddenRow
+        1:Pass    //pt none, ft/et/st hiddenRow
+        2:Failed  //ft none, pt/et/st hiddenRow,
+        3:Error   //et none, pt/ft/st hiddenRow
+        4:Skiped  //st none, pt/ft/et hiddenRow
+        5:All     //pt/ft/et/st none
+        */
+        function showCase(level) {
+            trs = document.getElementsByTagName("tr");
+            for (var i = 0; i < trs.length; i++) {
+                tr = trs[i];
+                id = tr.id;
+                if (id.substr(0, 2) == 'ft') {
+                    if (level == 4 || level == 3 || level == 1 || level == 0) {
+                        tr.className = 'hiddenRow';
+                    } else {
+                        tr.className = '';
+                    }
+                }
+                if (id.substr(0, 2) == 'pt') {
+                    if (level == 4 || level == 3 || level == 2 || level == 0) {
+                        tr.className = 'hiddenRow';
+                    } else {
+                        tr.className = '';
+                    }
+                }
+                if (id.substr(0, 2) == 'et') {
+                    if (level == 4 || level == 2 || level == 1 || level == 0) {
+                        tr.className = 'hiddenRow';
+                    } else {
+                        tr.className = '';
+                    }
+                }
+                if (id.substr(0, 2) == 'st') {
+                    if (level == 3 || level == 2 || level == 1 || level == 0) {
+                        tr.className = 'hiddenRow';
+                    } else {
+                        tr.className = '';
+                    }
+                }
+            }
+
+            //add detail_class
+            detail_class = document.getElementsByClassName('detail');
+
+            //console.log(detail_class.length)
+            if (level == 5) {
+                for (var i = 0; i < detail_class.length; i++) {
+                    detail_class[i].innerHTML = "outline"
+                }
+            } else {
+                for (var i = 0; i < detail_class.length; i++) {
+                    detail_class[i].innerHTML = "detail"
+                }
+            }
+        }
+
+        function addTestCaseRows(tests) {
+            var tr_code = ""
+            var objs = JSON.parse(tests);
+            for (var i = 0; i < objs.length; i++) {
+                obj = objs[i]
+                tc_name = obj.Name
+                desc = obj.Desc
+                if (desc !== '') {
+                    tc_name = obj.Name + ": " + desc
+                }
+                status = obj.Status
+                output = obj.Output
+                elapsedtime = obj.Elapsed
+                iteration = obj.Iteration
+                switch (status) {
+                    case "SKIP":
+                        style = "skipCase"
+                        tid = `st1_${i}`
+                        break;
+                    case "ERROR":
+                        style = "errorCase"
+                        tid = `et1_${i}`
+                        break;
+                    case "FAIL":
+                        style = "failCase"
+                        tid = `ft1_${i}`
+                        break;
+                    default:
+                        style = "passCase"
+                        tid = `pt1_${i}`
+                        break;
+                }
+                tr_code += `
+                <tr id='${tid}' class='failCase'>
+                    <td colspan='1' align='left' class='${style}'>${tc_name}</td>
+                    <td colspan='1' align='center' class='${style}'>${status} </td>
+                    <td colspan='1' align='center'>${elapsedtime}</td>
+                    <td colspan='1' align='center'>Loop: ${iteration}</td>
+                </tr>
+                `
+            }
+            return tr_code
+        }
+
+        function addTestNodeRows(nodes) {
+            var tr_code = ""
+            var objs = JSON.parse(nodes);
+            for (var i = 0; i < objs.length; i++) {
+                obj = objs[i]
+                node_name = obj.Name
+                node_status = obj.Status
+                node_ip = obj.IPAddress
+                node_roles = obj.Roles
+                node_user = obj.User
+                node_password = obj.Password
+                tid = `pt1_${i}`
+
+                tr_code += `
+                <tr id='${tid}' class='failCase'>
+                    <td colspan='1' align='center''>${node_name}</td>
+                    <td colspan='1' align='center''>${node_status}</td>
+                    <td colspan='1' align='center''>${node_ip}</td>
+                    <td colspan='1' align='center''>${node_roles}</td>
+                    <td colspan='1' align='center''>${node_user}</td>
+                    <td colspan='1' align='center''>${node_password}</td>
+                </tr>
+                `
+            }
+            return tr_code
+        }
+
+        function addKeyValueRows(kvs) {
+            var tr_code = ""
+            var objs = JSON.parse(kvs);
+            for (var key in objs) {
+                obj_k = key
+                obj_v = objs[key]
+                if (obj_v == "") {
+                    continue
+                }
+                tid = `pt1_0`
+                tr_code += `
+                <tr id='${tid}' class='failCase'>
+                    <td colspan='1' align='right' width="20%">${obj_k}</td>
+                    <td colspan='1' align='left'>${obj_v}</td>
+                </tr>
+                `
+            }
+            return tr_code
+        }
+
+    </script>
+
+    <!-- Title -->
+    <div class='heading'>
+        <h1> {{.Title}} </h1>
+    </div>
+    </br>
+
+    <!-- Test Env Information: -->
+    <b> <span lang="EN-US" style="font-size:14.0pt">ENV:</span> </b>
+    <table id='env_table' class="table table-condensed table-bordered table-hover">
+        <!-- test ENV Describle list -->
+        <param id="env_list" value="{{.Desc}}" />
+        <script language=" javascript" type="text/javascript">
+            nodeCode = addKeyValueRows(document.getElementById('env_list').value)
+            document.write(nodeCode);
+        </script>
+    </table>
+    </br>
+
+    <!-- Test Nodes Information: -->
+    <b> <span lang="EN-US" style="font-size:14.0pt">Nodes:</span> </b>
+    <table id='node_table' class="table table-condensed table-bordered table-hover">
+        <colgroup>
+            <col align='left' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+        </colgroup>
+        <!-- env_table_header -->
+        <tr id='table_header' class="text-center success" style="font-weight: bold;font-size: 14px;">
+            <td align='center'>NodeName</td>
+            <td align='center'>STATUS</td>
+            <td align='center'>IP</td>
+            <td align='center'>Roles</td>
+            <td align='center'>User</td>
+            <td align='center'>Password</td>
+        </tr>
+        <!-- test nodes list -->
+        <param id="node_list" value="{{.Nodes}}" />
+        <script language=" javascript" type="text/javascript">
+            nodeCode = addTestNodeRows(document.getElementById('node_list').value)
+            document.write(nodeCode);
+        </script>
+    </table>
+    </br>
+
+    <!-- summary_table -->
+    <b> <span lang="EN-US" style="font-size:14.0pt">Summary:</span> </b>
+    <table id='summary_table' class="table table-condensed table-bordered table-hover">
+        <colgroup>
+            <col align='left' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+        </colgroup>
+        <!-- summary_table_header -->
+        <tr id='table_header' class="text-center success" style="font-weight: bold;font-size: 14px;">
+            <td>Total</td>
+            <td>Pass</td>
+            <td>Fail</td>
+            <td>Error</td>
+            <td>Skip</td>
+            <td>Passing Rate</td>
+        </tr>
+        <!-- summary_row -->
+        <tr id='result_tabl' class="text-center success">
+            <td>{{.Total}}</td>
+            <td>{{.Pass}}</td>
+            <td>{{.Fail}}</td>
+            <td>{{.Error}}</td>
+            <td>{{.Skip}}</td>
+            <td>{{.Passrate}}</td>
+        </tr>
+    </table>
+    </br>
+
+    <!-- case_table -->
+    <b> <span lang="EN-US" style="font-size:14.0pt">Details:</span> </b>
+    <table id='result_table' class="table table-condensed table-bordered table-hover">
+        <colgroup>
+            <col align='left' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+        </colgroup>
+        <!-- table_header -->
+        <tr id='table_header' class="text-center success" style="font-weight: bold;font-size: 14px;">
+            <td align='center'>Test Group/Case</td>
+            <td align='center'>Status</td>
+            <td align='center'>Elapsed Time</td>
+            <td align='center'>Iteration</td>
+        </tr>
+        <!-- test case list -->
+        <param id="tc_list" value="{{.Results}}" />
+        <script language=" javascript" type="text/javascript">
+            // tcCode = testAdd(5, 6)
+            tcCode = addTestCaseRows(document.getElementById('tc_list').value)
+            document.write(tcCode);
+        </script>
+    </table>
+    <script>
+        showCase(5);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,479 @@
+<!-- This template prepare for a report with 1 table and filters -->
+<!-- <?xml version="1.0" encoding="UTF-8" ?> -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>{{.Title}}</title>
+    <meta name="generator" content="StressRunner 1.0.0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js">
+    </script>
+    <script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js">
+    </script>
+    <!-- style -->
+    <style type="text/css" media="screen">
+        body {
+            font-family: Microsoft YaHei, Tahoma, arial, helvetica, sans-serif;
+            padding: 20px;
+            font-size: 100%;
+        }
+
+        table {
+            font-size: 100%;
+        }
+
+        p {
+            white-space: pre-line
+        }
+
+        /* -- heading ---------------------------------------------------------------------- */
+        h1 {
+            font-size: 16pt;
+            color: gray;
+        }
+
+        .heading {
+            margin-top: 0ex;
+            margin-bottom: 1ex;
+        }
+
+        .heading .attribute {
+            margin-top: 1ex;
+            margin-bottom: 0;
+        }
+
+        .heading .description {
+            margin-top: 4ex;
+            margin-bottom: 6ex;
+        }
+
+        /* -- report ------------------------------------------------------------------------ */
+        #total_row {
+            font-weight: bold;
+        }
+
+        .passCase {
+            color: #5cb85c;
+        }
+
+        .failCase {
+            color: #d9534f;
+            font-weight: bold;
+        }
+
+        .errorCase {
+            color: #f04e4e;
+            font-weight: bold;
+        }
+
+        .skipCase {
+            color: #f0a20d;
+            font-weight: bold;
+        }
+
+        .hiddenRow {
+            display: none;
+        }
+
+        .testcase {
+            margin-left: 2em;
+        }
+
+        .piechart {
+            position: absolute;
+            ;
+            top: 75px;
+            left: 450px;
+            /* width: 200px;
+            float: left; */
+            display: inline;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- script -->
+    <script language="javascript" type="text/javascript">
+        output_list = Array();
+        /*level
+        0:Summary //all hiddenRow
+        1:Pass    //pt none, ft/et/st hiddenRow
+        2:Failed  //ft none, pt/et/st hiddenRow,
+        3:Error   //et none, pt/ft/st hiddenRow
+        4:Skiped  //st none, pt/ft/et hiddenRow
+        5:All     //pt/ft/et/st none
+        */
+        function showCase(level) {
+            trs = document.getElementsByTagName("tr");
+            for (var i = 0; i < trs.length; i++) {
+                tr = trs[i];
+                id = tr.id;
+                if (id.substr(0, 2) == 'ft') {
+                    if (level == 4 || level == 3 || level == 1 || level == 0) {
+                        tr.className = 'hiddenRow';
+                    } else {
+                        tr.className = '';
+                    }
+                }
+                if (id.substr(0, 2) == 'pt') {
+                    if (level == 4 || level == 3 || level == 2 || level == 0) {
+                        tr.className = 'hiddenRow';
+                    } else {
+                        tr.className = '';
+                    }
+                }
+                if (id.substr(0, 2) == 'et') {
+                    if (level == 4 || level == 2 || level == 1 || level == 0) {
+                        tr.className = 'hiddenRow';
+                    } else {
+                        tr.className = '';
+                    }
+                }
+                if (id.substr(0, 2) == 'st') {
+                    if (level == 3 || level == 2 || level == 1 || level == 0) {
+                        tr.className = 'hiddenRow';
+                    } else {
+                        tr.className = '';
+                    }
+                }
+            }
+
+            //add detail_class
+            detail_class = document.getElementsByClassName('detail');
+
+            //console.log(detail_class.length)
+            if (level == 5) {
+                for (var i = 0; i < detail_class.length; i++) {
+                    detail_class[i].innerHTML = "outline"
+                }
+            } else {
+                for (var i = 0; i < detail_class.length; i++) {
+                    detail_class[i].innerHTML = "detail"
+                }
+            }
+        }
+
+        function showClassDetail(cid, count) {
+            var id_list = Array(count);
+            var toHide = 1;
+            for (var i = 0; i < count; i++) {
+                tid0 = 't' + cid.substr(1) + '_' + (i + 1);
+                tid = 'f' + tid0;
+                tr = document.getElementById(tid);
+                if (!tr) {
+                    tid = 'p' + tid0;
+                    tr = document.getElementById(tid);
+                    if (!tr) {
+                        tid = 'e' + tid0;
+                        tr = document.getElementById(tid);
+                        if (!tr) {
+                            tid = 's' + tid0;
+                            tr = document.getElementById(tid);
+                        }
+                    }
+                }
+                id_list[i] = tid;
+                if (tr.className) {
+                    toHide = 0;
+                }
+            }
+            for (var i = 0; i < count; i++) {
+                tid = id_list[i];
+                if (toHide) {
+                    document.getElementById(tid).className = 'hiddenRow';
+                    document.getElementById(cid).innerText = "detail"
+                } else {
+                    document.getElementById(tid).className = '';
+                    document.getElementById(cid).innerText = "outline"
+                }
+            }
+        }
+
+        function html_escape(s) {
+            s = s.replace(/&/g, '&amp;');
+            s = s.replace(/</g, '&lt;');
+            s = s.replace(/>/g, '&gt;');
+            return s;
+        }
+
+        function drawCircle(pass, fail, error, skip) {
+            var color = ["#6c6", "#c00", "#c60", "#d7d808"];
+            var data = [pass, fail, error, skip];
+            var text_arr = ["pass", "fail", "error", "skip"];
+
+            var canvas = document.getElementById("circle");
+            var ctx = canvas.getContext("2d");
+            var startPoint = 0;
+            var width = 28,
+                height = 14;
+            var posX = 112 * 2 + 20,
+                posY = 30;
+            var textX = posX + width + 5,
+                textY = posY + 10;
+            for (var i = 0; i < data.length; i++) {
+                ctx.fillStyle = color[i];
+                ctx.beginPath();
+                ctx.moveTo(112, 70);
+                ctx.arc(112, 70, 70, startPoint, startPoint + Math.PI * 2 * (data[i] / (data[0] + data[1] + data[2])), false);
+                ctx.fill();
+                startPoint += Math.PI * 2 * (data[i] / (data[0] + data[1] + data[2]));
+                ctx.fillStyle = color[i];
+                ctx.fillRect(posX, posY + 20 * i, width, height);
+                ctx.moveTo(posX, posY + 20 * i);
+                ctx.font = 'bold 14px';
+                ctx.fillStyle = color[i];
+                var percent = text_arr[i] + " " + data[i];
+                ctx.fillText(percent, textX, textY + 20 * i);
+
+            }
+        }
+
+        function addTestCaseRows(tests) {
+            var tr_code = ""
+            var objs = JSON.parse(tests);
+            for (var i = 0; i < objs.length; i++) {
+                obj = objs[i]
+                tc_name = obj.Name
+                desc = obj.Desc
+                if (desc !== '') {
+                    tc_name = obj.Name + ":" + desc
+                }
+                status = obj.Status
+                output = obj.Output
+                elapsedtime = obj.Elapsed
+                iteration = obj.Iteration
+                style = "passCase"
+                tid = `pt1_${i}`
+                switch (status) {
+                    case "SKIP":
+                        style = "skipCase"
+                        tid = `st1_${i}`
+                        tr_code += `
+                        <tr id='${tid}' class='tc_skip'>
+                            <td class='${style}'><div class='testcase'>${tc_name}</div></td>
+                            <td colspan='4' align='center'>
+                            <!--pack up error info default
+                            <button id='btn_${tid}' type="button"  class="btn btn-danger btn-xs collapsed" data-toggle="collapse" data-target='#div_${tid}'>${status}</button>
+                            <div id='div_${tid}' class="collapse">  -->
+
+                            <!-- unfold error info default -->
+                            <button id='btn_${tid}' type="button"  class="btn btn-warning btn-xs" data-toggle="collapse" data-target='#div_${tid}'>${status}</button>
+                            <div align='left'>
+                            <div id='div_${tid}' class="collapse in"><pre>${output}</pre></div>
+                            <!--css div popup end-->
+
+                            <td colspan='1' align='center'>${elapsedtime}</td>
+                            <td colspan='1' align='center'>Loop: ${iteration}</td>
+                            </td>
+                        </tr>
+                        `
+                        break;
+                    case "ERROR":
+                        style = "errorCase"
+                        tid = `et1_${i}`
+                        tr_code += `
+                        <tr id='${tid}' class='tc_error'>
+                            <td class='${style}'><div class='testcase'>${tc_name}</div></td>
+                            <td colspan='4' align='center'>
+                            <!--pack up error info default
+                            <button id='btn_${tid}' type="button"  class="btn btn-danger btn-xs collapsed" data-toggle="collapse" data-target='#div_${tid}'>${status}</button>
+                            <div id='div_${tid}' class="collapse">  -->
+
+                            <!-- unfold error info default -->
+                            <button id='btn_${tid}' type="button"  class="btn btn-danger btn-xs" data-toggle="collapse" data-target='#div_${tid}'>${status}</button>
+                            <div align='left'>
+                            <div id='div_${tid}' class="collapse in"><pre>${output}</pre></div>
+                            <!--css div popup end-->
+
+                            <td colspan='1' align='center'>${elapsedtime}</td>
+                            <td colspan='1' align='center'>Loop: ${iteration}</td>
+                            </td>
+                        </tr>
+                        `
+                        break;
+                    case "FAIL":
+                        style = "failCase"
+                        tid = `ft1_${i}`
+                        tr_code += `
+                        <tr id='${tid}' class='tc_fail'>
+                            <td class='${style}'><div class='testcase'>${tc_name}</div></td>
+                            <td colspan='4' align='center'>
+                            <!--pack up error info default
+                            <button id='btn_${tid}' type="button"  class="btn btn-danger btn-xs collapsed" data-toggle="collapse" data-target='#div_${tid}'>${status}</button>
+                            <div id='div_${tid}' class="collapse">  -->
+
+                            <!-- unfold error info default -->
+                            <button id='btn_${tid}' type="button"  class="btn btn-danger btn-xs" data-toggle="collapse" data-target='#div_${tid}'>${status}</button>
+                            <div align='left'>
+                            <div id='div_${tid}' class="collapse in"><pre>${output}</pre></div>
+                            <!--css div popup end-->
+
+                            <td colspan='1' align='center'>${elapsedtime}</td>
+                            <td colspan='1' align='center'>Loop: ${iteration}</td>
+                            </td>
+                        </tr>
+                        `
+                        break;
+                    default:
+                        switch (output) {
+                            case "":
+                                tr_code += `
+                                <tr id='${tid}' class='tc_no_output'>
+                                    <td class='${style}'>
+                                        <div class='testcase'>${tc_name}</div>
+                                    </td>
+                                    <td colspan='4' align='center'>
+                                        <button id='btn_${tid}' type="button" class="btn btn-success btn-xs collapsed" data-toggle="collapse"
+                                            data-target='#div_${tid}'>${status}</button>
+                                    <td colspan='1' align='center'>${elapsedtime}</td>
+                                    <td colspan='1' align='center'>Loop: ${iteration}</td>
+                                </tr>
+                                `
+                                break;
+                            default:
+                                tr_code += `
+                                <tr id='${tid}' class='tc_with_output'>
+                                    <td class='${style}'><div class='testcase'>${tc_name}</div></td>
+                                    <td colspan='4' align='center'>
+                                    <!--pack up error info default
+                                    <button id='btn_${tid}' type="button"  class="btn btn-success btn-xs collapsed" data-toggle="collapse" data-target='#div_${tid}'>${status}</button>
+                                    <div id='div_${tid}' class="collapse">  -->
+
+                                    <!-- unfold error info default -->
+                                    <button id='btn_${tid}' type="button"  class="btn btn-success btn-xs collapsed" data-toggle="collapse" data-target='#div_${tid}'>${status}</button>
+                                    <div align='left'>
+                                    <div id='div_${tid}' class="collapse"><pre>${output}</pre></div>
+                                    <!--css div popup end-->
+
+                                    <td colspan='1' align='center'>${elapsedtime}</td>
+                                    <td colspan='1' align='center'>Loop: ${iteration}</td>
+                                    </td>
+                                </tr>
+                                `
+                                break;
+                        }
+                }
+
+            }
+            return tr_code
+        }
+
+        // var div1 = document.getElementById('result_table');
+        // div1.innerHTML = tr_code;
+        function testAdd(a, b) {
+
+            tid = `tr_${a}`
+            style = "failCase"
+            desc = `tr_${b}`
+            status = "ERROR"
+            elapsedtime = "obj.Elapsed"
+            iteration = "obj.Iteration"
+            tr_code = `
+            <tr id='${tid}' class='tc_no_output'>
+                <td class='${style}'>
+                    <div class='testcase'>${desc}</div>
+                </td>
+                <td colspan='4' align='center'>
+                    <button id='btn_${tid}' type="button" class="btn btn-success btn-xs collapsed" data-toggle="collapse"
+                        data-target='#div_${tid}'>${status}</button>
+                <td colspan='1' align='center'>${elapsedtime}</td>
+                <td colspan='1' align='center'>Loop: ${iteration}</td>
+            </tr>
+
+            `
+            return tr_code
+        }
+
+
+    </script>
+    <!-- piechart -->
+    <div class="piechart">
+        <div>
+            <canvas id="circle" width="300" height="150"></canvas>
+        </div>
+    </div>
+    <!-- heading -->
+    <div class='heading'>
+        <h1> {{.Title}} </h1>
+        <p class='description'> Test Description:{{.Desc}} </p>
+    </div>
+    <!-- report -->
+    <div id='show_with_filter'>
+        <a class="btn btn-primary" href='javascript:showCase(0)'>Summary</a>
+        <a class="btn btn-info" href='javascript:showCase(5)'>ALL {{.Count}}</a>
+        <a class="btn btn-success" href='javascript:showCase(1)'>Passed {{.Pass}}</a>
+        <a class="btn btn-danger" href='javascript:showCase(2)'>Failed {{.Fail}}</a>
+        <a class="btn btn-danger" href='javascript:showCase(3)'>Error {{.Error}}</a>
+        <a class="btn btn-warning" href='javascript:showCase(4)'>Skiped {{.Skip}}</a>
+        <a class="btn btn-primary" href='javascript:showCase(0)'>Pass Rate {{.Passrate}}</a>
+    </div>
+    <!-- result_table -->
+    <table id='result_table' class="table table-condensed table-bordered table-hover">
+        <colgroup>
+            <col align='left' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+            <col align='right' />
+        </colgroup>
+        <!-- table_header -->
+        <tr id='table_header' class="text-center success" style="font-weight: bold;font-size: 14px;">
+            <td>Test Group/Case</td>
+            <td>Count</td>
+            <td>Pass</td>
+            <td>Fail</td>
+            <td>Error</td>
+            <td>Skip</td>
+            <td>View</td>
+        </tr>
+        <!-- case Summary -->
+        <tr class='%(style)s warning'>
+            <td> Summary </td>
+            <td class="text-center">{{.Count}}</td>
+            <td class="text-center">{{.Pass}}</td>
+            <td class="text-center">{{.Fail}}</td>
+            <td class="text-center">{{.Error}}</td>
+            <td class="text-center">{{.Skip}}</td>
+            <td class="text-center"> </td>
+            <!-- <td class="text-center">
+                <a href="javascript:showClassDetail({cid}, {Count})" class="detail" id='{Cid}'>Detail</a>
+            </td> -->
+        </tr>
+
+        <!-- test case list -->
+        <param id="tc_list" value="{{.Results}}" />
+        <script language=" javascript" type="text/javascript">
+            // tcCode = testAdd(5, 6)
+            tcCode = addTestCaseRows(document.getElementById('tc_list').value)
+            document.write(tcCode);
+        </script>
+
+        <!-- table_total_row -->
+        <tr id='total_row' class=" text-center active">
+            <td>Total</td>
+            <td>{{.Count}}</td>
+            <td>{{.Pass}}</td>
+            <td>{{.Fail}}</td>
+            <td>{{.Error}}</td>
+            <td>{{.Skip}}</td>
+            <td>Passing rate: {{.Passrate}}</td>
+        </tr>
+    </table>
+    <param id="tc_pass" value="{{.Pass}}" />
+    <param id="tc_fail" value="{{.Fail}}" />
+    <param id="tc_error" value="{{.Error}}" />
+    <param id="tc_skip" value="{{.Skip}}" />
+    <script>
+        showCase(5);
+        pass = Number(document.getElementById('tc_pass').value)
+        fail = Number(document.getElementById('tc_fail').value)
+        error = Number(document.getElementById('tc_error').value)
+        skip = Number(document.getElementById('tc_skip').value)
+        drawCircle(pass, fail, error, skip);
+    </script>
+</body>
+
+</html>
