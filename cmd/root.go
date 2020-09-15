@@ -1,3 +1,12 @@
+package cmd
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/spf13/cobra"
+)
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "load",
@@ -6,11 +15,7 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		Info.Printf("Start Load data: %s/<dirs-%d>/<files-%d>, Size: %d bytes", TopPath, DirCount, FileCount, FileSize)
-		for dirPath := range DirsGenerator(TopPath, DirCount) {
-			files := FileNamesGenerator(dirPath, FileCount, ".txt")
-			MultiCreateFile(files, FileSize)
-		}
+
 	},
 }
 
@@ -27,9 +32,4 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&TopPath, "top_path", "", "Top path for create files")
-	rootCmd.PersistentFlags().IntVar(&DirCount, "dir_count", 3, "dir count")
-	rootCmd.PersistentFlags().IntVar(&FileCount, "file_count", 10, "file count")
-	rootCmd.PersistentFlags().IntVar(&FileSize, "file_size", 16, "each file size, unit:bytes")
-	rootCmd.MarkPersistentFlagRequired("top_path")
 }

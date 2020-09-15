@@ -1,11 +1,11 @@
 package main
 
 import (
-	// "libs-go/cmd"
+	"libs-go/cmd"
 )
 
 func main() {
 
-	// cmd.Execute()
+	cmd.Execute()
 
 }
