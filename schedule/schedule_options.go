@@ -28,9 +28,9 @@ func Desc(d string) OptionFunc {
 }
 
 // FnLevel The func level(func name as Phase name), default=1
-// eg: pzct/vizion/resources.(*Vizion).StartServices.func1
-// FnLevel=1 ==> func1
-// FnLevel=2 ==> StartServices
+// eg: func1.func2.func3
+// FnLevel=1 ==> func3
+// FnLevel=2 ==> func2
 func FnLevel(v int) OptionFunc {
 	return func(sc *Schedule) error {
 		sc.Input.FnLevel = v
