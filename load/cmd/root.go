@@ -75,7 +75,7 @@ func initLogging() {
 	// backend output to log file && Console
 	fileStrformat := `%{time:2006-01-02T15:04:05} %{module} %{level:.4s}: (%{shortfile}) %{message}`
 	fileFormat := logging.MustStringFormatter(fileStrformat)
-	err := os.MkdirAll(path.Dir(fileLogPath), os.ModePerm)
+	err := os.MkdirAll(path.Dir(fileLogPathName), os.ModePerm)
 	file, err := os.OpenFile(fileLogPathName,
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
